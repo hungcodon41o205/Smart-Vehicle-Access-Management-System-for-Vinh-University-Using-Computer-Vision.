@@ -1,5 +1,5 @@
-# HƯỚNG DẪN KIẾN TRÚC & LUỒNG HOẠT ĐỘNG HỆ THỐNG VINHGATE 2.0 (BẢN HỢP NHẤT)
-> **Tài liệu hướng dẫn trực quan dành cho người mới tiếp cận, thành viên nhóm và hội đồng đánh giá.**  
+# HƯỚNG DẪN KIẾN TRÚC & LUỒNG HOẠT ĐỘNG HỆ THỐNG VINHGATE  (BẢN HỢP NHẤT)
+> **Tài liệu hướng dẫn trực quan dành thành viên nhóm và hội đồng đánh giá.**  
 > Mục tiêu: Đọc xong là hiểu ngay từng file làm nhiệm vụ gì, nằm ở đường dẫn chính xác nào trên máy, file nào gọi file nào, và dữ liệu đi từ Camera đến Web/CSDL ra sao.
 
 ---
