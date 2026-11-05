@@ -2,14 +2,10 @@
 # VINHGATE 2.0 — GITIGNORE
 # ==============================================================================
 
-# 1. Môi trường ảo, IDE & Cache Python
-.env
+# 1. Môi trường ảo & IDE (Bỏ qua môi trường cục bộ)
 venv/
 env/
 .venv/
-__pycache__/
-*.py[cod]
-*$py.class
 .vscode/
 .idea/
 
@@ -26,31 +22,6 @@ frontend/**/*.css
 frontend/*.html
 !frontend/**/.gitkeep
 !frontend/.gitkeep
-
-# 3. File trọng số mô hình lớn (Lưu trữ ngoài hoặc phát hành qua Release / Drive)
-models/*.pt
-models/*.onnx
-models/*.engine
-!models/README.md
-
-# 4. Dữ liệu Media nặng & Tệp ảnh tạm (Chỉ giữ lại khung thư mục qua .gitkeep)
-data/raw_videos/*.mp4
-data/raw_videos/*.avi
-data/raw_videos/*.mov
-data/raw_videos/*.mkv
-
-data/detected_plates/*.jpg
-data/detected_plates/*.jpeg
-data/detected_plates/*.png
-
-data/extracted_frames/**/*.jpg
-data/extracted_frames/**/*.jpeg
-data/extracted_frames/**/*.png
-
-data/captured_logs/**/*.jpg
-data/captured_logs/**/*.png
-
-data/*.csv
 
 # Luôn theo dõi các file .gitkeep để duy trì cây thư mục
 !.gitkeep
