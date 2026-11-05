@@ -1,9 +1,6 @@
 <div align="center">
   <h1>VINHGATE — HỆ THỐNG QUẢN LÝ XE RA VÀO ĐẠI HỌC VINH</h1>
   <h3>ỨNG DỤNG THỊ GIÁC MÁY TÍNH & HỌC SÂU TRONG XÂY DỰNG KHUÔN VIÊN THÔNG MINH</h3>
-  <p><strong>Trường Đại học Vinh · Khoa Công nghệ Thông tin</strong></p>
-  <p>Đề tài Thực tập Tốt nghiệp / Khóa luận Tốt nghiệp — Hướng nghiên cứu Smart Campus</p>
-  <p>YOLOv8 · OpenCV · PaddleOCR / EasyOCR · FastAPI · WebSocket · MySQL 8.0</p>
 </div>
 
 ---
@@ -24,7 +21,6 @@
 - [11. Lỗi thường gặp & Cách khắc phục](#11-loi-thuong-gap)
 - [12. Giới hạn hiện tại & Hướng phát triển](#12-gioi-han-phat-trien)
 
----
 
 <a id="1-gioi-thieu"></a>
 ## 1. Giới thiệu đề tài & Bối cảnh
