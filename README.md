@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>VINHGATE 2.0 — HỆ THỐNG QUẢN LÝ XE RA VÀO ĐẠI HỌC VINH</h1>
+  <h1>VINHGATE — HỆ THỐNG QUẢN LÝ XE RA VÀO ĐẠI HỌC VINH</h1>
   <h3>ỨNG DỤNG THỊ GIÁC MÁY TÍNH & HỌC SÂU TRONG XÂY DỰNG KHUÔN VIÊN THÔNG MINH</h3>
   <p><strong>Trường Đại học Vinh · Khoa Công nghệ Thông tin</strong></p>
   <p>Đề tài Thực tập Tốt nghiệp / Khóa luận Tốt nghiệp — Hướng nghiên cứu Smart Campus</p>
@@ -441,10 +441,3 @@ Kiểm nghiệm trên tập 250 khung hình xe máy thực tế tại cổng tr�
 2. Kết nối phần cứng điều khiển thanh chắn Barie tự động thông qua vi điều khiển ESP32 / Arduino qua giao tiếp Serial / Modbus.
 3. Mở rộng cơ chế xác thực kép: Tích hợp đầu đọc thẻ từ RFID sinh viên kết hợp với biển số xe để triệt tiêu 100% tình trạng gian lận thẻ xe.
 4. Phát triển ứng dụng di động dành riêng cho sinh viên để tra cứu lịch sử gửi xe và nhận thông báo khi có bất thường về phương tiện.
-
----
-
-<div align="center">
-  <p><strong>DỰ ÁN ĐỒ ÁN TỐT NGHIỆP — KHOA CÔNG NGHỆ THÔNG TIN — TRƯỜNG ĐẠI HỌC VINH</strong></p>
-  <p><em>Hướng tới xây dựng giải pháp Khuôn viên Đại học Thông minh (Smart Campus)</em></p>
-</div>
