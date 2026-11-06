@@ -1,6 +1,8 @@
 <div align="center">
   <h1>VINHGATE — HỆ THỐNG QUẢN LÝ XE RA VÀO ĐẠI HỌC VINH</h1>
   <h3>ỨNG DỤNG THỊ GIÁC MÁY TÍNH & HỌC SÂU TRONG XÂY DỰNG KHUÔN VIÊN THÔNG MINH</h3>
+  <p><strong>Trường Đại học Vinh · Khoa Công nghệ Thông tin</strong></p>
+  <p><strong>Công nghệ sử dụng:</strong> Python 3 · YOLOv8 · OpenCV · PaddleOCR / EasyOCR · FastAPI · WebSocket · MySQL 8.0 · Chart.js</p>
 </div>
 
 ---
