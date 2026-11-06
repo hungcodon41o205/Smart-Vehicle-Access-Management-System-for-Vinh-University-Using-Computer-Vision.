@@ -1,3 +1,4 @@
+﻿-- [CSDL VinhGate 2.0] Database Management System
 -- ============================================================================
 -- DỮ LIỆU MẪU BAN ĐẦU - ĐẠI HỌC VINH
 -- File: database/seed_data.sql

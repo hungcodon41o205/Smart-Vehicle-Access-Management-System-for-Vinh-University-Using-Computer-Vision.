@@ -1,3 +1,4 @@
+﻿-- [CSDL VinhGate 2.0] Database Management System
 -- ============================================================================
 -- Migration: v2_add_dang_ky_khach.sql
 -- Nâng cấp mô hình CSDL từ 12 bảng lên 13 bảng (Cách B)

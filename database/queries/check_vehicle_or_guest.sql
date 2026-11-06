@@ -1,3 +1,4 @@
+﻿-- [CSDL VinhGate 2.0] Database Management System
 -- =======================================================================
 -- File: database/queries/check_vehicle_or_guest.sql
 -- Công dụng: Đối chiếu biển số đọc được với:

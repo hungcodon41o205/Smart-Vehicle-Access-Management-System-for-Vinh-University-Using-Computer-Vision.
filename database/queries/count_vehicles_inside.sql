@@ -1,3 +1,4 @@
+﻿-- [CSDL VinhGate 2.0] Database Management System
 -- =======================================================================
 -- File: database/queries/count_vehicles_inside.sql
 -- Công dụng: Đếm chính xác số lượng xe đang ở trong trường Đại học Vinh

@@ -1,3 +1,4 @@
+﻿-- [CSDL VinhGate 2.0] Database Management System
 -- ============================================================================
 -- HỆ THỐNG QUẢN LÝ XE RA VÀO ĐẠI HỌC VINH (VINHGATE 2.0)
 -- File: database/schema.sql

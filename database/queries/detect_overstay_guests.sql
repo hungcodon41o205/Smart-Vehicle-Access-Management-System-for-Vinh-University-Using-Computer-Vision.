@@ -1,3 +1,4 @@
+﻿-- [CSDL VinhGate 2.0] Database Management System
 -- =======================================================================
 -- File: database/queries/detect_overstay_guests.sql
 -- Công dụng: Tìm các phiếu khách đang ở trong trường mà quá hạn den_luc
