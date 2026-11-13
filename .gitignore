@@ -1,0 +1,40 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Environment variables & secrets
+.env
+.env.local
+
+# Video files (heavy media files)
+data/raw_videos/*.mp4
+data/raw_videos/*.avi
+data/raw_videos/*.mov
+data/test_samples/*.mp4
+
+# Extracted frame dumps
+data/extracted_frames/
+data/detected_plates/
+data/captured_logs/
+
+# IDE & Editor settings
+.vscode/*
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

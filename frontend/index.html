@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VinhGate 2.0 - Giám Sát Cổng & Thẻ Từ Đại Học Vinh</title>
+    <link rel="stylesheet" href="/frontend/css/dashboard.css">
+    <style>
+        .badge-card { background: #e0e7ff; color: #3730a3; font-weight: 600; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; border: 1px solid #c7d2fe; }
+        .badge-lane { background: #fef3c7; color: #92400e; font-weight: 600; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .card-reader-box { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 14px; border-radius: 8px; margin-bottom: 14px; border: 1px solid #334155; }
+        .card-reader-input { width: 100%; padding: 10px 14px; font-size: 1.1rem; font-weight: bold; letter-spacing: 1px; color: #0284c7; background: #ffffff; border: 2px solid #38bdf8; border-radius: 6px; box-sizing: border-box; }
+        .quick-card-btn { background: #334155; color: #f8fafc; border: 1px solid #475569; padding: 5px 10px; border-radius: 4px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; }
+        .quick-card-btn:hover { background: #0284c7; color: white; border-color: #38bdf8; }
+        .anti-theft-alert { background: #fee2e2; border: 2px solid #ef4444; color: #991b1b; padding: 12px; border-radius: 6px; margin-top: 10px; animation: pulse 1.5s infinite; font-weight: 600; }
+        .two-factor-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; }
+        .two-factor-pass { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .two-factor-fail { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">
+            <span class="logo-tag">VINH</span>
+            <span>Gate 2.0</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active"><a href="/frontend/index.html">📹 Giám Sát Cổng & Thẻ</a></li>
+            <li><a href="/frontend/vehicles.html">🚗 Quản Lý Xe, Thẻ & Khách</a></li>
+            <li><a href="/frontend/history.html">📜 Lịch Sử & Báo Cáo</a></li>
+            <li><a href="/docs" target="_blank">📖 Swagger API Docs</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            Trường Đại Học Vinh<br>Khoa CNTT - Đồ án Thực tập
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="title">Hệ Thống Kiểm Soát Ra Vào 2 Yếu Tố (Thẻ Từ RFID + Camera AI ANPR)</div>
+            <div class="topbar-right">
+                <span id="connection-status" class="status-badge pulse">ĐANG KẾT NỐI...</span>
+                <span style="font-size: 0.9rem; font-weight: 500;">Bảo Vệ: Nguyễn Văn Bảo</span>
+            </div>
+        </header>
+
+        <main class="content-body">
+            <!-- Stat Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="label">Xe Đang Trong Trường</div>
+                    <div class="value" id="count-total" style="color: var(--primary);">0</div>
+                    <div class="detail">Đối chiếu 2 chiều VÀO/RA</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Xe Máy Trong Bãi</div>
+                    <div class="value" id="count-moto">0</div>
+                    <div class="detail">Biển 2 dòng + Thẻ</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Ô Tô Trong Bãi</div>
+                    <div class="value" id="count-car">0</div>
+                    <div class="detail">Biển 1 dòng + Thẻ</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Cảnh Báo Gian Lận / Trộm</div>
+                    <div class="value" id="count-alert" style="color: var(--danger);">0</div>
+                    <div class="detail">Lệch thẻ, tráo biển, anti-passback</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid: Camera & Live Events -->
+            <div class="dashboard-grid">
+                <!-- Left: Camera View & Simulated Card Reader -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Làn Kiểm Soát & Đầu Đọc Thẻ Từ</span>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <label style="font-size: 0.8rem; font-weight:600;">Làn xe:</label>
+                            <select id="selected-lane" class="form-control" style="display:inline-block; width:auto; padding:4px 8px; font-size:0.85rem;" onchange="updateLaneInfo()">
+                                <option value="1">Làn 01: VÀO - Xe Nội Bộ (CAM-01)</option>
+                                <option value="2">Làn 02: VÀO - Xe Khách (CAM-02)</option>
+                                <option value="3">Làn 03: RA - Xe Nội Bộ (CAM-03)</option>
+                                <option value="4">Làn 04: RA - Xe Khách (CAM-04)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Card Reader Box (Simulated / Physical RFID) -->
+                        <div class="card-reader-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-weight:600; font-size:0.9rem; color:#38bdf8;">💳 ĐẦU ĐỌC THẺ TỪ (RFID / GIẢ LẬP MÃ THẺ):</span>
+                                <span id="card-status-pill" style="font-size:0.75rem; background:#047857; color:#ecfdf5; padding:2px 8px; border-radius:12px;">ĐẦU ĐỌC SẴN SÀNG</span>
+                            </div>
+                            <input type="text" id="simulated-card-input" class="card-reader-input" placeholder="Quẹt thẻ hoặc nhập mã thẻ (VD: 1001, KH-01)..." onkeydown="if(event.key==='Enter') executeEventWithCard()">
+                            
+                            <!-- Quick Simulation Pills -->
+                            <div style="margin-top:10px; font-size:0.8rem; color:#94a3b8;">
+                                <div style="margin-bottom:4px;">Chạm nhanh thẻ mẫu để kiểm thử:</div>
+                                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                    <button class="quick-card-btn" onclick="selectCard('1001', '38B1-12345', 'XE_MAY', '1')">💳 1001: SV Hà (Xe 1: 38B1-12345)</button>
+                                    <button class="quick-card-btn" onclick="selectCard('1001', '37AB-12206', 'XE_MAY', '1')">💳 1001: SV Hà (Xe 2: 37AB-12206)</button>
+                                    <button class="quick-card-btn" onclick="selectCard('1002', '37B2-67890', 'XE_MAY', '1')">💳 1002: SV Hùng (37B2-67890)</button>
+                                    <button class="quick-card-btn" onclick="selectCard('2001', '37A-99999', 'O_TO', '1')">💳 2001: GV Dũng (37A-99999)</button>
+                                    <button class="quick-card-btn" onclick="selectCard('KH-01', '37A-99911', 'O_TO', '4')">💳 KH-01: Khách Ra (37A-99911)</button>
+                                    <button class="quick-card-btn" onclick="selectCard('KH-02', '37A-55555', 'O_TO', '2')">💳 KH-02: Cấp Khách Vào Mới</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Camera View -->
+                        <div class="camera-box">
+                            <div id="camera-badge" class="camera-overlay-badge">CAM 01: LÀN VÀO NỘI BỘ (30 FPS)</div>
+                            <div id="barrier-badge" class="barrier-indicator">BARIE: ĐÓNG</div>
+                            <div style="text-align: center; padding: 25px 20px;">
+                                <svg width="50" height="50" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom: 8px; opacity: 0.7;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                <h4 id="lane-title">Làn Kiểm Soát Đang Hoạt Động</h4>
+                                <p id="lane-sub" style="font-size: 0.85rem; margin-top: 4px; color:#64748b;">Quẹt thẻ từ và camera AI sẽ chụp đối chiếu tức thời (&lt; 200ms)</p>
+                            </div>
+                        </div>
+
+                        <!-- Kịch bản kiểm thử bảo mật -->
+                        <div style="margin-top: 14px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--border-color);">
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color:#1e293b;">Kịch Bản Thử Nghiệm An Ninh & Chống Trộm:</div>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <button class="btn btn-primary" onclick="simulateScenario('SV_DUNG_THE')">1. SV Hà: Đúng Thẻ 1001 & Biển 1 (Mở)</button>
+                                <button class="btn btn-primary" onclick="simulateScenario('SV_XE_THU_HAI')">2. SV Hà: Đúng Thẻ 1001 & Biển 2 (Mở)</button>
+                                <button class="btn btn-danger" onclick="simulateScenario('TROM_XE_LECH_THE')">3. Trộm Xe: Thẻ 1001 Nhưng Lệch Biển (Chặn)</button>
+                                <button class="btn btn-danger" onclick="simulateScenario('ANTI_PASSBACK')">4. Vi Phạm Anti-Passback (Chặn)</button>
+                                <button class="btn btn-primary" onclick="simulateScenario('KHACH_VAO')">5. Cấp Thẻ Khách KH-02 Lúc Vào</button>
+                                <button class="btn btn-danger" onclick="simulateScenario('KHACH_TRAO_BIEN')">6. Khách Ra Bị Tráo Biển Số (Báo Động)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Latest Detected Vehicle Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Kết Quả Xác Thực 2 Yếu Tố (Thẻ + Biển Số)</span>
+                    </div>
+                    <div class="card-body" id="latest-vehicle-card">
+                        <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                            <p style="font-size: 1rem;">Chưa có lượt xe nào vừa qua cổng.</p>
+                            <span style="font-size: 0.85rem;">Vui lòng quẹt thẻ từ hoặc bấm một kịch bản thử nghiệm bên trái.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Access Logs Table -->
+            <div class="card">
+                <div class="card-header">
+                    <span>Nhật Ký Lượt Xe Vừa Qua Cổng (Ghi Nhận Thẻ & Đối Chiếu)</span>
+                    <button class="btn btn-secondary" onclick="fetchRecentLogs()">Làm mới</button>
+                </div>
+                <div class="card-body table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Thời Gian</th>
+                                <th>Làn / Cổng</th>
+                                <th>Mã Thẻ Quẹt</th>
+                                <th>Biển Số AI Đọc</th>
+                                <th>Loại Xe</th>
+                                <th>Chủ Xe / Đối Tượng</th>
+                                <th>Kết Quả Barie</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-tbody">
+                            <tr><td colspan="8" style="text-align: center;">Đang tải dữ liệu...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Script logic -->
+    <script src="/frontend/js/websocket_client.js"></script>
+    <script>
+        let currentPlateToSimulate = "38B1-12345";
+        let currentVehicleType = "XE_MAY";
+
+        function updateLaneInfo() {
+            const lane = document.getElementById("selected-lane").value;
+            const camBadge = document.getElementById("camera-badge");
+            const laneTitle = document.getElementById("lane-title");
+            const laneSub = document.getElementById("lane-sub");
+
+            if (lane === "1") {
+                camBadge.textContent = "CAM 01: LÀN VÀO NỘI BỘ (30 FPS)";
+                laneTitle.textContent = "Làn Vào Dành Cho Cán Bộ / Sinh Viên";
+                laneSub.textContent = "Yêu cầu: Quẹt thẻ từ nội bộ đã đăng ký (1 thẻ tối đa 3 xe)";
+            } else if (lane === "2") {
+                camBadge.textContent = "CAM 02: LÀN VÀO XE KHÁCH (30 FPS)";
+                laneTitle.textContent = "Làn Vào Dành Cho Khách Vãng Lai";
+                laneSub.textContent = "Cấp thẻ từ khách xoay vòng và chụp lưu biển số xe lúc vào";
+            } else if (lane === "3") {
+                camBadge.textContent = "CAM 03: LÀN RA NỘI BỘ (30 FPS)";
+                laneTitle.textContent = "Làn Ra Dành Cho Cán Bộ / Sinh Viên";
+                laneSub.textContent = "Quẹt thẻ từ đối chiếu chính chủ trước khi mở barie";
+            } else if (lane === "4") {
+                camBadge.textContent = "CAM 04: LÀN RA XE KHÁCH (30 FPS)";
+                laneTitle.textContent = "Làn Ra Dành Cho Khách Vãng Lai";
+                laneSub.textContent = "Thu hồi thẻ và đối soát nghiêm ngặt biển số lúc vào vs lúc ra";
+            }
+        }
+
+        function selectCard(cardCode, plate, type, laneId) {
+            document.getElementById("simulated-card-input").value = cardCode;
+            currentPlateToSimulate = plate;
+            currentVehicleType = type;
+            document.getElementById("selected-lane").value = laneId;
+            updateLaneInfo();
+        }
+
+        async function executeEventWithCard() {
+            const cardCode = document.getElementById("simulated-card-input").value.trim();
+            if (!cardCode) {
+                alert("Vui lòng nhập hoặc quẹt mã thẻ từ!");
+                return;
+            }
+            await sendEvent(cardCode, currentPlateToSimulate, currentVehicleType);
+        }
+
+        async function simulateScenario(type) {
+            if (type === "SV_DUNG_THE") {
+                document.getElementById("selected-lane").value = "1";
+                document.getElementById("simulated-card-input").value = "1001";
+                await sendEvent("1001", "38B1-12345", "XE_MAY");
+            } else if (type === "SV_XE_THU_HAI") {
+                document.getElementById("selected-lane").value = "1";
+                document.getElementById("simulated-card-input").value = "1001";
+                await sendEvent("1001", "37AB-12206", "XE_MAY");
+            } else if (type === "TROM_XE_LECH_THE") {
+                document.getElementById("selected-lane").value = "1";
+                document.getElementById("simulated-card-input").value = "1001";
+                await sendEvent("1001", "29A-88888", "O_TO");
+            } else if (type === "ANTI_PASSBACK") {
+                document.getElementById("selected-lane").value = "1";
+                document.getElementById("simulated-card-input").value = "1002";
+                // Lần 1 vào
+                await sendEvent("1002", "37B2-67890", "XE_MAY");
+                // Lần 2 cố tình quẹt vào tiếp
+                setTimeout(async () => {
+                    await sendEvent("1002", "37B2-67890", "XE_MAY");
+                }, 1000);
+            } else if (type === "KHACH_VAO") {
+                document.getElementById("selected-lane").value = "2";
+                document.getElementById("simulated-card-input").value = "KH-02";
+                await sendEvent("KH-02", "37A-68888", "O_TO");
+            } else if (type === "KHACH_TRAO_BIEN") {
+                document.getElementById("selected-lane").value = "4";
+                document.getElementById("simulated-card-input").value = "KH-01";
+                // KH-01 lúc vào là 37A-99911, lúc ra lại giả mạo xe 37A-11122
+                await sendEvent("KH-01", "37A-11122", "O_TO");
+            }
+        }
+
+        async function sendEvent(maThe, bienSo, loaiXe) {
+            const laneId = parseInt(document.getElementById("selected-lane").value);
+            const huong = (laneId === 1 || laneId === 2) ? "VAO" : "RA";
+
+            try {
+                const res = await fetch("/api/gate/event", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        camera_id: laneId,
+                        huong: huong,
+                        bien_so: bienSo,
+                        ma_the: maThe,
+                        loai_xe: loaiXe,
+                        do_tin_cay: 0.96,
+                        thoi_gian_xu_ly_ms: 125,
+                        bypass_cooldown: true
+                    })
+                });
+                const result = await res.json();
+                handleGateResult(result);
+            } catch (e) {
+                alert("Lỗi kết nối cổng: " + e);
+            }
+        }
+
+        function handleGateResult(result) {
+            fetchCounts();
+            fetchRecentLogs();
+
+            const barie = document.getElementById("barrier-badge");
+            if (result.mo_barie) {
+                barie.textContent = "BARIE: ĐANG MỞ (CHO QUA)";
+                barie.className = "barrier-indicator open";
+                setTimeout(() => {
+                    barie.textContent = "BARIE: ĐÓNG";
+                    barie.className = "barrier-indicator";
+                }, 4000);
+            } else {
+                barie.textContent = "BARIE: GIỮ ĐÓNG (TỪ CHỐI)";
+                barie.className = "barrier-indicator";
+            }
+
+            const card = document.getElementById("latest-vehicle-card");
+            
+            // Xây dựng nhãn xác thực 2FA
+            let badge2FA = '';
+            if (result.ket_qua === 'CHO_PHEP') {
+                badge2FA = '<span class="two-factor-badge two-factor-pass">✅ XÁC THỰC 2FA THÀNH CÔNG: ĐÚNG THẺ &amp; ĐÚNG XE</span>';
+            } else {
+                badge2FA = '<span class="two-factor-badge two-factor-fail">❌ XÁC THỰC THẤT BẠI: KHÔNG KHỚP THẺ / CẢNH BÁO AN NINH</span>';
+            }
+
+            let chuXeHtml = '<span style="color:var(--text-muted);">Khách chưa rõ thông tin</span>';
+            let xeCuaTheHtml = '';
+            if (result.thong_tin_chu_xe) {
+                const tc = result.thong_tin_chu_xe;
+                chuXeHtml = `<strong>${tc.ho_ten}</strong> (${tc.loai_doi_tuong === 'NOI_BO' ? 'Nội Bộ: ' + (tc.don_vi || tc.ma_dinh_danh) : 'Khách Vãng Lai'})`;
+                if (tc.danh_sach_xe_cua_the) {
+                    xeCuaTheHtml = `<div style="margin-top:4px; font-size:0.82rem; color:#475569;">Các xe gán với thẻ này (${tc.danh_sach_xe_cua_the.length}/3): <strong>${tc.danh_sach_xe_cua_the.join(', ')}</strong></div>`;
+                }
+            }
+
+            let alertHtml = '';
+            if (result.canh_bao) {
+                alertHtml = `<div class="anti-theft-alert">
+                    🚨 <strong>[${result.canh_bao.loai}]</strong><br>${result.canh_bao.noi_dung}
+                </div>`;
+            }
+
+            card.innerHTML = `
+                <div style="text-align: center; margin-bottom: 14px;">
+                    <span class="plate-badge" style="font-size: 1.5rem; padding: 6px 16px;">${result.bien_so}</span>
+                    <div style="margin-top: 8px;">
+                        <span class="badge-card">💳 THẺ QUẸT: ${result.ma_the || 'KHÔNG CÓ THẺ'}</span>
+                        <span class="badge ${result.huong === 'VAO' ? 'badge-in' : 'badge-out'}">${result.huong}</span>
+                        <span style="font-size:0.85rem; color:#64748b; margin-left:6px;">Xử lý: ${result.thoi_gian_xu_ly_ms}ms</span>
+                    </div>
+                </div>
+
+                <div style="text-align:center; margin-bottom:12px;">
+                    ${badge2FA}
+                </div>
+
+                <div style="font-size: 0.9rem; line-height: 1.6; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                    <div><strong>Chủ phương tiện:</strong> ${chuXeHtml}</div>
+                    ${xeCuaTheHtml}
+                    <div><strong>Độ tin cậy OCR:</strong> ${(result.do_tin_cay * 100).toFixed(1)}%</div>
+                    <div><strong>Quyết định Barie:</strong> <span class="badge ${result.ket_qua === 'CHO_PHEP' ? 'badge-allow' : 'badge-reject'}">${result.ket_qua}</span></div>
+                </div>
+
+                ${alertHtml}
+            `;
+        }
+
+        async function fetchCounts() {
+            try {
+                const res = await fetch("/api/gate/counts");
+                const data = await res.json();
+                document.getElementById("count-total").innerText = data.tong_xe_trong_truong || 0;
+                document.getElementById("count-moto").innerText = data.so_xe_may || 0;
+                document.getElementById("count-car").innerText = data.so_o_to || 0;
+            } catch (e) {
+                console.error("Lỗi lấy số đếm:", e);
+            }
+        }
+
+        async function fetchRecentLogs() {
+            try {
+                const res = await fetch("/api/gate/recent-logs?limit=10");
+                const logs = await res.json();
+                const tbody = document.getElementById("logs-tbody");
+                if (!logs || logs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Chưa có lượt xe nào.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = logs.map(l => {
+                    const badgeHuong = l.huong === 'VAO' ? '<span class="badge badge-in">VÀO</span>' : '<span class="badge badge-out">RA</span>';
+                    let badgeKetQua = '<span class="badge badge-allow">CHO PHÉP</span>';
+                    if (l.ket_qua === 'TU_CHOI') badgeKetQua = '<span class="badge badge-reject">TỪ CHỐI</span>';
+                    if (l.ket_qua === 'CHO_XAC_NHAN') badgeKetQua = '<span class="badge badge-pending">CHỜ DUYỆT</span>';
+
+                    let chuXe = l.chu_xe_noibo ? `SV/CB: ${l.chu_xe_noibo}` : (l.ten_khach ? `Khách: ${l.ten_khach}` : 'Khách vãng lai');
+                    let maTheTag = l.ma_the ? `<span class="badge-card">${l.ma_the}</span>` : '<span style="color:#94a3b8; font-size:0.8rem;">Chưa quẹt</span>';
+                    let laneTag = l.loai_lan ? `<span class="badge-lane">${l.loai_lan}</span>` : '';
+
+                    let btnAction = l.ket_qua === 'CHO_XAC_NHAN' 
+                        ? `<button class="btn btn-primary" style="padding:4px 8px; font-size:0.8rem;" onclick="promptConfirm(${l.id}, '${l.bien_so_doc}')">Xử lý tay</button>` 
+                        : '-';
+
+                    return `
+                        <tr>
+                            <td>${l.thoi_gian.replace('T', ' ').substring(11, 19)}</td>
+                            <td>${laneTag} ${badgeHuong}</td>
+                            <td>${maTheTag}</td>
+                            <td><span class="plate-badge">${l.bien_so_doc}</span></td>
+                            <td>${l.loai_xe === 'XE_MAY' ? 'Xe Máy' : 'Ô Tô'}</td>
+                            <td>${chuXe}</td>
+                            <td>${badgeKetQua}</td>
+                            <td>${btnAction}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error("Lỗi lấy logs:", e);
+            }
+        }
+
+        async function promptConfirm(luotId, oldPlate) {
+            const correctPlate = prompt("Nhập biển số chính xác:", oldPlate);
+            if (!correctPlate) return;
+            const allow = confirm("Bấm OK để CHO PHÉP MỞ BARIE, bấm Cancel để TỪ CHỐI");
+            const ketQua = allow ? "CHO_PHEP" : "TU_CHOI";
+
+            try {
+                const res = await fetch("/api/gate/manual-confirm", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        luot_id: luotId,
+                        bien_so_xac_nhan: correctPlate,
+                        ket_qua: ketQua,
+                        ghi_chu: "Nhân viên bảo vệ xác nhận tay tại cổng"
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("Đã cập nhật!");
+                    fetchRecentLogs();
+                    fetchCounts();
+                }
+            } catch (e) {
+                alert("Lỗi: " + e);
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            updateLaneInfo();
+            fetchCounts();
+            fetchRecentLogs();
+            new GateWebSocketClient((msg) => {
+                if (msg.type === "VEHICLE_EVENT") {
+                    fetchCounts();
+                    fetchRecentLogs();
+                }
+            });
+            setInterval(fetchCounts, 10000);
+        });
+    </script>
+</body>
+</html>

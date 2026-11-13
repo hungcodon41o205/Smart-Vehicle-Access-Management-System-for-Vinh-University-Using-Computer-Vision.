@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VinhGate 2.0 - Lịch Sử Ra Vào & Báo Cáo Thống Kê</title>
+    <link rel="stylesheet" href="/frontend/css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <span class="logo-tag">VINH</span>
+            <span>Gate 2.0</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/frontend/index.html">📹 Giám Sát Cổng</a></li>
+            <li><a href="/frontend/vehicles.html">🚗 Quản Lý Xe & Khách</a></li>
+            <li class="active"><a href="/frontend/history.html">📜 Lịch Sử & Báo Cáo</a></li>
+            <li><a href="/docs" target="_blank">📖 Swagger API Docs</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            Trường Đại Học Vinh<br>Khoa CNTT - Đồ án Thực tập
+        </div>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="title">Báo Cáo Lưu Lượng & Truy Vết Lịch Sử Ra Vào</div>
+            <div>
+                <a href="/api/stats/export-excel" class="btn btn-success" target="_blank">📥 Xuất Báo Cáo Excel (.xlsx)</a>
+            </div>
+        </header>
+
+        <main class="content-body">
+            <!-- Biểu đồ lưu lượng trong ngày -->
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-header">Biểu Đồ Lưu Lượng Xe Theo 24 Giờ Trong Ngày</div>
+                <div class="card-body" style="height: 280px;">
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Bảng tra cứu lịch sử -->
+            <div class="card">
+                <div class="card-header">
+                    <span>Nhật Ký Lượt Ra Vào Chi Tiết</span>
+                    <button class="btn btn-secondary" onclick="fetchHistory()">Làm mới</button>
+                </div>
+                <div class="card-body table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã Lượt</th>
+                                <th>Thời Gian</th>
+                                <th>Hướng</th>
+                                <th>Biển Số Nhận Diện</th>
+                                <th>Loại Xe</th>
+                                <th>Độ Tin Cậy AI</th>
+                                <th>Tốc Độ (ms)</th>
+                                <th>Đối Tượng</th>
+                                <th>Quyết Định</th>
+                                <th>Cổng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody">
+                            <tr><td colspan="10" style="text-align: center;">Đang nạp dữ liệu...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/frontend/js/charts.js"></script>
+    <script>
+        async function fetchHistory() {
+            try {
+                const res = await fetch("/api/gate/recent-logs?limit=50");
+                const logs = await res.json();
+                const tbody = document.getElementById("history-tbody");
+                tbody.innerHTML = logs.map(l => {
+                    const badgeHuong = l.huong === 'VAO' ? '<span class="badge badge-in">VÀO</span>' : '<span class="badge badge-out">RA</span>';
+                    let badgeKetQua = '<span class="badge badge-allow">CHO PHÉP</span>';
+                    if (l.ket_qua === 'TU_CHOI') badgeKetQua = '<span class="badge badge-reject">TỪ CHỐI</span>';
+                    if (l.ket_qua === 'CHO_XAC_NHAN') badgeKetQua = '<span class="badge badge-pending">CHỜ DUYỆT</span>';
+
+                    let chuXe = l.chu_xe_noibo ? `SV/CB: ${l.chu_xe_noibo}` : (l.ten_khach ? `Khách: ${l.ten_khach}` : 'Khách vãng lai');
+
+                    return `
+                        <tr>
+                            <td>#${l.id}</td>
+                            <td>${l.thoi_gian.replace('T', ' ').substring(0, 19)}</td>
+                            <td>${badgeHuong}</td>
+                            <td><span class="plate-badge">${l.bien_so_doc}</span></td>
+                            <td>${l.loai_xe === 'XE_MAY' ? 'Xe Máy' : 'Ô Tô'}</td>
+                            <td>${(l.do_tin_cay * 100).toFixed(1)}%</td>
+                            <td>${l.thoi_gian_xu_ly_ms} ms</td>
+                            <td>${chuXe}</td>
+                            <td>${badgeKetQua}</td>
+                            <td>${l.ten_cong}</td>
+                        </tr>
+                    `;
+                }).join('') || '<tr><td colspan="10" style="text-align: center;">Không có dữ liệu.</td></tr>';
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            initTrafficChart("trafficChart");
+            fetchHistory();
+        });
+    </script>
+</body>
+</html>

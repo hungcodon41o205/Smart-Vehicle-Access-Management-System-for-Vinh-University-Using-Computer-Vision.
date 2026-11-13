@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VinhGate 2.0 - Quản Lý Phương Tiện, Thẻ Từ & Khách (Cách B)</title>
+    <link rel="stylesheet" href="/frontend/css/dashboard.css">
+    <style>
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+        .tab-btn { padding: 10px 18px; border: none; background: none; font-size: 0.95rem; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .badge-card { background: #e0e7ff; color: #3730a3; font-weight: 600; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; border: 1px solid #c7d2fe; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <span class="logo-tag">VINH</span>
+            <span>Gate 2.0</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/frontend/index.html">📹 Giám Sát Cổng & Thẻ</a></li>
+            <li class="active"><a href="/frontend/vehicles.html">🚗 Quản Lý Xe, Thẻ & Khách</a></li>
+            <li><a href="/frontend/history.html">📜 Lịch Sử & Báo Cáo</a></li>
+            <li><a href="/docs" target="_blank">📖 Swagger API Docs</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            Trường Đại Học Vinh<br>Khoa CNTT - Đồ án Thực tập
+        </div>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="title">Hồ Sơ Phương Tiện, Thẻ Từ Định Danh & Phiếu Đăng Ký Khách</div>
+        </header>
+
+        <main class="content-body">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('tab-cards')">💳 Quản Lý Thẻ Từ RFID (Kho Thẻ)</button>
+                <button class="tab-btn" onclick="switchTab('tab-internal')">🎓 Xe Sinh Viên / Cán Bộ (1 Thẻ &le; 3 Xe)</button>
+                <button class="tab-btn" onclick="switchTab('tab-guests')">📋 Phiếu Đăng Ký Khách (Cách B)</button>
+                <button class="tab-btn" onclick="switchTab('tab-blacklist')">🚫 Danh Sách Đen (Blacklist)</button>
+            </div>
+
+            <!-- TAB 1: Quản Lý Thẻ Từ RFID -->
+            <div id="tab-cards" class="tab-content active">
+                <div class="dashboard-grid">
+                    <!-- Form thêm thẻ mới hoặc gán thẻ -->
+                    <div class="card">
+                        <div class="card-header">Cấp Mới / Gán Thẻ Từ Vào Xe</div>
+                        <div class="card-body">
+                            <!-- Form 1: Tạo thẻ -->
+                            <form id="form-create-card" onsubmit="handleCreateCard(event)" style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                                <h4 style="font-size:0.95rem; margin-bottom: 10px; color: var(--primary);">1. Thêm Thẻ Mới Vào Kho Thẻ:</h4>
+                                <div class="form-group">
+                                    <label>Mã Thẻ (UID / Dãy số) (*):</label>
+                                    <input type="text" id="c-code" class="form-control" required placeholder="VD: 1004, KH-06, CARD-001">
+                                </div>
+                                <div class="form-group">
+                                    <label>Loại Thẻ:</label>
+                                    <select id="c-type" class="form-control">
+                                        <option value="NOI_BO">Thẻ Nội Bộ (Cán bộ / Sinh viên)</option>
+                                        <option value="KHACH">Thẻ Khách (Xoay vòng tại cổng)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ghi Chú:</label>
+                                    <input type="text" id="c-note" class="form-control" placeholder="VD: Cấp đợt 2 cho Khoa CNTT">
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">Tạo Thẻ Mới</button>
+                            </form>
+
+                            <!-- Form 2: Gán thẻ cho xe -->
+                            <form id="form-assign-card" onsubmit="handleAssignCard(event)">
+                                <h4 style="font-size:0.95rem; margin-bottom: 10px; color: var(--primary);">2. Gán Thẻ Cho Biển Số Xe (Tối đa 3 xe/thẻ):</h4>
+                                <div class="form-group">
+                                    <label>Mã Thẻ Từ (*):</label>
+                                    <input type="text" id="assign-card" class="form-control" required placeholder="VD: 1001">
+                                </div>
+                                <div class="form-group">
+                                    <label>Biển Số Xe (*):</label>
+                                    <input type="text" id="assign-plate" class="form-control" required placeholder="VD: 38B1-12345">
+                                </div>
+                                <button type="submit" class="btn btn-secondary" style="width: 100%;">Gán Thẻ Cho Xe</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách thẻ hiện có trong kho -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Danh Sách Thẻ Từ Trong Hệ Thống</span>
+                            <button class="btn btn-secondary" onclick="fetchCards()">Làm mới</button>
+                        </div>
+                        <div class="card-body table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Mã Thẻ</th>
+                                        <th>Phân Loại</th>
+                                        <th>Trạng Thái</th>
+                                        <th>Chủ Thẻ (Nếu Nội Bộ)</th>
+                                        <th>Số Xe Gán (Tối Đa 3)</th>
+                                        <th>Biển Số Xe Đã Gán</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cards-tbody">
+                                    <tr><td colspan="6" style="text-align:center;">Đang tải...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Xe Sinh Viên & Cán Bộ -->
+            <div id="tab-internal" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <span>Danh Sách Xe Nội Bộ Đại Học Vinh &amp; Thẻ Từ Gán Kèm</span>
+                        <input type="text" id="search-internal" placeholder="Tìm theo tên, mã SV, biển số, thẻ..." class="form-control" style="width: 280px;" oninput="fetchInternalVehicles()">
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã Định Danh</th>
+                                    <th>Họ Và Tên</th>
+                                    <th>Đối Tượng</th>
+                                    <th>Khoa / Đơn Vị</th>
+                                    <th>Mã Thẻ Từ (2FA)</th>
+                                    <th>Biển Số</th>
+                                    <th>Loại Xe</th>
+                                    <th>Trạng Thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="internal-tbody">
+                                <tr><td colspan="8" style="text-align:center;">Đang tải...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: Phiếu Đăng Ký Khách (Cách B) -->
+            <div id="tab-guests" class="tab-content">
+                <div class="dashboard-grid">
+                    <!-- Form lập phiếu khách -->
+                    <div class="card">
+                        <div class="card-header">Lập Phiếu Đăng Ký Cho Khách Mới</div>
+                        <div class="card-body">
+                            <form id="form-guest" onsubmit="handleCreateGuestTicket(event)">
+                                <div class="form-group">
+                                    <label>Họ và Tên Khách (*):</label>
+                                    <input type="text" id="g-name" class="form-control" required placeholder="VD: Nguyễn Văn An">
+                                </div>
+                                <div class="form-group">
+                                    <label>Số Điện Thoại:</label>
+                                    <input type="text" id="g-phone" class="form-control" placeholder="VD: 0912345678">
+                                </div>
+                                <div class="form-group">
+                                    <label>Biển Số Xe Khách (*):</label>
+                                    <input type="text" id="g-plate" class="form-control" required placeholder="VD: 37A-99999 hoặc 29C1-12345">
+                                </div>
+                                <div class="form-group">
+                                    <label>Loại Phương Tiện:</label>
+                                    <select id="g-type" class="form-control">
+                                        <option value="O_TO">Ô Tô (Biển 1 dòng)</option>
+                                        <option value="XE_MAY">Xe Máy (Biển 2 dòng)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Mã Thẻ Từ Cấp Tạm (Tùy chọn):</label>
+                                    <input type="text" id="g-card" class="form-control" placeholder="VD: KH-02 (Nếu cấp thẻ vật lý)">
+                                </div>
+                                <div class="form-group">
+                                    <label>Cơ Quan / Đơn Vị Công Tác:</label>
+                                    <input type="text" id="g-org" class="form-control" placeholder="VD: Sở Giáo Dục / Báo Tuổi Trẻ...">
+                                </div>
+                                <div class="form-group">
+                                    <label>Cán Bộ / Phòng Ban Tiếp Đón:</label>
+                                    <input type="text" id="g-host" class="form-control" placeholder="VD: Thầy Nam - Khoa CNTT">
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">Lập Phiếu Khách (Cấp Mã Tạm)</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách phiếu khách hiện có -->
+                    <div class="card">
+                        <div class="card-header">Phiếu Khách Gần Đây</div>
+                        <div class="card-body table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Mã Phiếu</th>
+                                        <th>Tên Khách</th>
+                                        <th>Biển Số</th>
+                                        <th>Thẻ Mượn</th>
+                                        <th>Hạn Ra</th>
+                                        <th>Trạng Thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="guest-tickets-tbody">
+                                    <tr><td colspan="6" style="text-align:center;">Đang tải...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: Danh Sách Đen -->
+            <div id="tab-blacklist" class="tab-content">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">Thêm Biển Số Vào Danh Sách Đen</div>
+                        <div class="card-body">
+                            <form onsubmit="handleAddToBlacklist(event)">
+                                <div class="form-group">
+                                    <label>Biển Số Cần Chặn (*):</label>
+                                    <input type="text" id="bl-plate" class="form-control" required placeholder="VD: 37S1-99999">
+                                </div>
+                                <div class="form-group">
+                                    <label>Lý Do Đưa Vào Blacklist (*):</label>
+                                    <textarea id="bl-reason" class="form-control" required placeholder="VD: Xe nghi vấn trộm cắp..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Mức Độ Xử Lý:</label>
+                                    <select id="bl-level" class="form-control">
+                                        <option value="CHAN_TUYET_DOI">CHẶN TUYỆT ĐỐI (Không mở barie)</option>
+                                        <option value="CANH_BAO">CẢNH BÁO (Bảo vệ kiểm tra)</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-danger" style="width: 100%;">Lưu Vào Danh Sách Đen</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">Danh Sách Xe Bị Chặn / Cảnh Báo</div>
+                        <div class="card-body table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Biển Số</th>
+                                        <th>Lý Do</th>
+                                        <th>Mức Độ</th>
+                                        <th>Trạng Thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bl-tbody">
+                                    <tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+
+            if (tabId === 'tab-cards') fetchCards();
+            if (tabId === 'tab-guests') fetchGuestTickets();
+            if (tabId === 'tab-internal') fetchInternalVehicles();
+            if (tabId === 'tab-blacklist') fetchBlacklist();
+        }
+
+        async function fetchCards() {
+            try {
+                const res = await fetch("/api/vehicles/cards");
+                const cards = await res.json();
+                const tbody = document.getElementById("cards-tbody");
+                tbody.innerHTML = cards.map(c => {
+                    const badgeType = c.loai_the === 'NOI_BO' 
+                        ? '<span class="badge badge-in">NỘI BỘ</span>' 
+                        : '<span class="badge badge-out">KHÁCH</span>';
+                    
+                    let badgeStatus = '<span class="badge badge-allow">SẴN SÀNG</span>';
+                    if (c.trang_thai === 'DANG_SU_DUNG') badgeStatus = '<span class="badge badge-pending">ĐANG DÙNG</span>';
+                    if (c.trang_thai === 'KHOA' || c.trang_thai === 'DA_MAT') badgeStatus = '<span class="badge badge-reject">' + c.trang_thai + '</span>';
+
+                    const countColor = c.so_xe_da_gan >= 3 ? 'var(--danger)' : 'var(--primary)';
+
+                    return `
+                        <tr>
+                            <td><span class="badge-card">${c.ma_the}</span></td>
+                            <td>${badgeType}</td>
+                            <td>${badgeStatus}</td>
+                            <td>${c.chu_the ? c.chu_the + ' (' + c.ma_dinh_danh + ')' : '<span style="color:#94a3b8;">Khách xoay vòng</span>'}</td>
+                            <td><strong style="color:${countColor}">${c.so_xe_da_gan}/3 xe</strong></td>
+                            <td>${c.danh_sach_bien_so ? '<span class="plate-badge">' + c.danh_sach_bien_so + '</span>' : '<span style="color:#94a3b8;">Chưa gán xe</span>'}</td>
+                        </tr>
+                    `;
+                }).join('') || '<tr><td colspan="6" style="text-align:center;">Kho thẻ trống.</td></tr>';
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function handleCreateCard(e) {
+            e.preventDefault();
+            const payload = {
+                ma_the: document.getElementById("c-code").value.trim().toUpperCase(),
+                loai_the: document.getElementById("c-type").value,
+                ghi_chu: document.getElementById("c-note").value.trim() || null
+            };
+            const res = await fetch("/api/vehicles/cards", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(data.message);
+                document.getElementById("form-create-card").reset();
+                fetchCards();
+            } else {
+                alert("Lỗi: " + (data.detail || JSON.stringify(data)));
+            }
+        }
+
+        async function handleAssignCard(e) {
+            e.preventDefault();
+            const payload = {
+                ma_the: document.getElementById("assign-card").value.trim().toUpperCase(),
+                bien_so: document.getElementById("assign-plate").value.trim().toUpperCase()
+            };
+            const res = await fetch("/api/vehicles/cards/assign", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(data.message);
+                document.getElementById("form-assign-card").reset();
+                fetchCards();
+            } else {
+                alert("Lỗi: " + (data.detail || JSON.stringify(data)));
+            }
+        }
+
+        async function fetchGuestTickets() {
+            try {
+                const res = await fetch("/api/vehicles/guest-tickets");
+                const tickets = await res.json();
+                const tbody = document.getElementById("guest-tickets-tbody");
+                tbody.innerHTML = tickets.map(t => `
+                    <tr>
+                        <td><strong>${t.ma_tam}</strong></td>
+                        <td>${t.ten_khach || 'Khách vãng lai'}</td>
+                        <td><span class="plate-badge">${t.bien_so}</span></td>
+                        <td>${t.ma_the_muon ? '<span class="badge-card">' + t.ma_the_muon + '</span>' : '<span style="color:#94a3b8;">Không thẻ</span>'}</td>
+                        <td>${t.den_luc ? t.den_luc.replace('T', ' ').substring(0, 16) : '-'}</td>
+                        <td><span class="badge ${t.trang_thai === 'DA_VAO' ? 'badge-in' : 'badge-allow'}">${t.trang_thai}</span></td>
+                    </tr>
+                `).join('') || '<tr><td colspan="6" style="text-align:center;">Chưa có phiếu nào.</td></tr>';
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function handleCreateGuestTicket(e) {
+            e.preventDefault();
+            const payload = {
+                ho_ten: document.getElementById("g-name").value,
+                so_dien_thoai: document.getElementById("g-phone").value || null,
+                bien_so: document.getElementById("g-plate").value,
+                loai_xe: document.getElementById("g-type").value,
+                ma_the: document.getElementById("g-card").value.trim().toUpperCase() || null,
+                don_vi_cong_tac: document.getElementById("g-org").value || null,
+                nguoi_tiep_don: document.getElementById("g-host").value || null
+            };
+
+            const res = await fetch("/api/vehicles/guest-tickets", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`Tạo phiếu thành công!`);
+                document.getElementById("form-guest").reset();
+                fetchGuestTickets();
+            } else {
+                alert("Lỗi: " + JSON.stringify(data));
+            }
+        }
+
+        async function fetchInternalVehicles() {
+            const search = document.getElementById("search-internal").value;
+            const res = await fetch(`/api/vehicles/internal${search ? '?search=' + encodeURIComponent(search) : ''}`);
+            const list = await res.json();
+            const tbody = document.getElementById("internal-tbody");
+            tbody.innerHTML = list.map(v => {
+                const cardTag = v.ma_the 
+                    ? `<span class="badge-card">${v.ma_the}</span>` 
+                    : `<span style="color:#94a3b8; font-size:0.8rem;">Chưa gán thẻ</span>`;
+
+                return `
+                    <tr>
+                        <td><strong>${v.ma_dinh_danh}</strong></td>
+                        <td>${v.ho_ten}</td>
+                        <td><span class="badge badge-in">${v.loai_nguoi_dung}</span></td>
+                        <td>${v.don_vi || '-'}</td>
+                        <td>${cardTag}</td>
+                        <td><span class="plate-badge">${v.bien_so}</span></td>
+                        <td>${v.loai_xe === 'XE_MAY' ? 'Xe Máy' : 'Ô Tô'}</td>
+                        <td><span class="badge badge-allow">${v.trang_thai}</span></td>
+                    </tr>
+                `;
+            }).join('') || '<tr><td colspan="8" style="text-align:center;">Không tìm thấy xe nào.</td></tr>';
+        }
+
+        async function fetchBlacklist() {
+            const res = await fetch("/api/vehicles/blacklist");
+            const list = await res.json();
+            const tbody = document.getElementById("bl-tbody");
+            tbody.innerHTML = list.map(b => `
+                <tr>
+                    <td><span class="plate-badge">${b.bien_so}</span></td>
+                    <td>${b.ly_do}</td>
+                    <td><span class="badge ${b.muc_do === 'CHAN_TUYET_DOI' ? 'badge-reject' : 'badge-pending'}">${b.muc_do}</span></td>
+                    <td>${b.con_hieu_luc ? 'Đang hiệu lực' : 'Đã khóa'}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" style="text-align:center;">Danh sách đen trống.</td></tr>';
+        }
+
+        async function handleAddToBlacklist(e) {
+            e.preventDefault();
+            const payload = {
+                bien_so: document.getElementById("bl-plate").value,
+                ly_do: document.getElementById("bl-reason").value,
+                muc_do: document.getElementById("bl-level").value
+            };
+            const res = await fetch("/api/vehicles/blacklist", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("Đã lưu vào danh sách đen!");
+                fetchBlacklist();
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            fetchCards();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+# ==============================================================================
+# VINHGATE 2.0 - DANH SÁCH THƯ VIỆN YÊU CẦU (REQUIREMENTS)
+# Hệ thống Quản lý Xe Ra Vào Đại học Vinh bằng Thị giác Máy tính
+# ==============================================================================
+
+# 1. Backend Server & Web API (FastAPI + WebSocket)
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.6.0
+python-multipart>=0.0.9
+websockets>=12.0
+requests>=2.31.0
+
+# 2. Cơ sở dữ liệu MySQL (13 Bảng chuẩn 3NF)
+pymysql>=1.1.0
+cryptography>=42.0.0
+python-dotenv>=1.0.1
+
+# 3. Thị giác Máy tính & Học sâu (YOLOv8 + OpenCV Preprocessing)
+# Chú ý: Cài đặt PyTorch với CUDA tương ứng trước nếu sử dụng GPU rời NVIDIA
+ultralytics>=8.1.0
+opencv-python>=4.9.0.80
+opencv-contrib-python>=4.9.0.80
+numpy>=1.24.0,<2.0.0
+pillow>=10.4.0
+onnxruntime>=1.17.0
+pyyaml>=6.0.1
+
+# 4. Engine Nhận diện Ký tự Quang học (PaddleOCR Engine cho Biển số VN)
+paddlepaddle>=2.6.2
+paddleocr>=2.7.3
+
+# 5. Xử lý Dữ liệu, Báo cáo & Thống kê
+openpyxl>=3.1.2
+pandas>=2.2.0
+tqdm>=4.66.0
+tabulate>=0.9.0
