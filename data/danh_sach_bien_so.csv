@@ -1,0 +1,6 @@
+﻿STT,Biển Số Nhận Diện,Loại Xe,Thời Gian Video,Số Lần Quét,Độ Tin Cậy,File Ảnh Biển Số
+1,37AB-12206,Xe Máy,00:02.13,47,76.5%,data/detected_plates/bien_so_01_37AB_12206.jpg
+2,37K1-66062,Xe Máy,00:08.80,81,82.2%,data/detected_plates/bien_so_02_37K1_66062.jpg
+3,37L9-0520,Xe Máy,00:19.20,19,60.4%,data/detected_plates/bien_so_03_37L9_0520.jpg
+4,37F1-20223,Xe Máy,00:37.47,35,93.8%,data/detected_plates/bien_so_04_37F1_20223.jpg
+5,37I-03879,Xe Máy,00:48.00,25,67.2%,data/detected_plates/bien_so_05_37I_03879.jpg

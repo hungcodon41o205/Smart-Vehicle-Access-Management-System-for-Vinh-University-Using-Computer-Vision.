@@ -1,0 +1,116 @@
+name: "Task công việc"
+description: "Tạo một công việc (task) cần thực hiện trong sprint"
+title: "[TASK] "
+labels: ["type: task", "status: todo"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Điền đầy đủ các mục bắt buộc (*) trước khi đưa task vào sprint.
+        Người thực hiện (Assignee), Milestone (sprint) và Project được chọn ở thanh bên phải sau khi tạo.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Mô tả công việc"
+      description: "Cần làm gì? Làm rõ phạm vi, tránh mô tả chung chung."
+      placeholder: "Ví dụ: Huấn luyện YOLOv8n phát hiện biển số trên bộ dữ liệu v1 (khoảng 2.000 ảnh)."
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-story
+    attributes:
+      label: "Bối cảnh / User story"
+      description: "Vì sao cần làm? Theo mẫu: Là <vai trò>, tôi muốn <việc>, để <mục đích>."
+      placeholder: "Là quản trị viên, tôi muốn xem nhật ký ra vào theo biển số, để truy vết khi xảy ra mất xe."
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Tiêu chí chấp nhận (Acceptance Criteria)"
+      description: "Danh sách điều kiện kiểm tra được. Task chỉ được đóng khi tất cả đều đạt."
+      placeholder: |
+        - [ ] Code chạy đúng yêu cầu, không phát sinh lỗi
+        - [ ] Model xuất ra file best.pt lưu trong thư mục models/
+        - [ ] Đã tự kiểm thử và đính kèm ảnh kết quả
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: "Phân hệ (Module)"
+      options:
+        - "Nhận dạng (YOLO / OCR)"
+        - "Backend / API"
+        - "Cơ sở dữ liệu"
+        - "Giao diện web"
+        - "Hạ tầng / DevOps"
+        - "Kiểm thử"
+        - "Tài liệu"
+        - "Khác"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "Độ ưu tiên"
+      description: "P0: Chặn toàn bộ dự án | P1: Cần xong trong sprint | P2: Nên xong | P3: Thấp"
+      options:
+        - "P0 - Khẩn cấp"
+        - "P1 - Cao"
+        - "P2 - Trung bình"
+        - "P3 - Thấp"
+      default: 2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: estimate
+    attributes:
+      label: "Ước lượng (Story points)"
+      description: "1 điểm ≈ vài giờ; 8 điểm ≈ 2-3 ngày; từ 13 điểm trở lên nên tách nhỏ."
+      options:
+        - "1"
+        - "2"
+        - "3"
+        - "5"
+        - "8"
+        - "13"
+    validations:
+      required: true
+
+  - type: input
+    id: due
+    attributes:
+      label: "Hạn hoàn thành"
+      placeholder: "dd/mm/yyyy"
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: "Phụ thuộc / Liên quan"
+      description: "Task này bị chặn bởi hoặc liên quan đến Issue nào?"
+      placeholder: |
+        Blocked by #02
+        Liên quan #06
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Hướng dẫn thực hiện / Ghi chú kỹ thuật"
+      description: "Gợi ý cách làm, đường dẫn file, lệnh cần chạy."
+
+  - type: checkboxes
+    id: dor
+    attributes:
+      label: "Definition of Ready"
+      options:
+        - label: "Mô tả rõ ràng, người khác đọc là hiểu"
+          required: true
+        - label: "Đã có tiêu chí chấp nhận kiểm tra được"
+          required: true
+        - label: "Đã ước lượng và đủ nhỏ để xong trong một sprint"
+          required: true
